@@ -2,8 +2,7 @@ services:
   - type: web
     name: linha-do-tempo
     runtime: docker
-    buildCommand: composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
-    startCommand: vendor/bin/heroku-php-apache2 -C apache.conf public/
+    dockerfilePath: Dockerfile
     envVars:
       - key: APP_ENV
         value: production
