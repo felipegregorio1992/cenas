@@ -48,4 +48,5 @@ services:
       - key: PORT
         value: "8080"
       - key: APACHE_LOG_DIR
-        value: "/var/log/apache2" 
+        value: "/var/log/apache2"
+    healthCheckPath: / 

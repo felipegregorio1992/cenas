@@ -22,7 +22,9 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 RUN a2enmod rewrite headers
 
 # Configurar Apache
-RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/apache2.conf \
+COPY apache.conf /etc/apache2/sites-available/000-default.conf
+RUN ln -sf /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-enabled/000-default.conf \
+    && sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/apache2.conf \
     && sed -i 's!AllowOverride None!AllowOverride All!g' /etc/apache2/apache2.conf
 
 # Instalar Composer
@@ -43,10 +45,6 @@ COPY . .
 # Gerar autoloader otimizado
 RUN composer dump-autoload --optimize --no-dev
 
-# Copiar arquivo de configuração do Apache
-COPY apache.conf /etc/apache2/sites-available/000-default.conf
-RUN ln -sf /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-enabled/000-default.conf
-
 # Criar diretórios necessários e definir permissões
 RUN mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
@@ -65,12 +63,15 @@ RUN echo "APP_NAME=\"Linha do Tempo\"" > .env \
     && echo "APP_DEBUG=false" >> .env \
     && echo "DB_CONNECTION=mysql" >> .env
 
-# Expor porta
-EXPOSE ${PORT}
-
 # Script de inicialização
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Configurar porta do Apache
+ENV APACHE_PORT=8080
+RUN echo "Listen \${PORT:-8080}" > /etc/apache2/ports.conf
+
+EXPOSE 8080
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["apache2-foreground"] 
