@@ -1,10 +1,12 @@
-/vendor
-/node_modules
+.git
+.gitignore
 .env
 .env.*
 *.log
-.git
-.gitignore
 .idea
 .vscode
-storage/*.key 
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor 
