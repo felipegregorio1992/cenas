@@ -58,18 +58,15 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 # Configurar variáveis de ambiente PHP
 RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory-limit.ini
 
-# Copiar .env.production para .env
-COPY .env.production .env
-
-# Gerar chave do aplicativo e otimizar
-RUN php artisan key:generate --force \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache \
-    && php artisan storage:link
+# Criar arquivo .env vazio
+RUN touch .env
 
 # Expor porta
 EXPOSE ${PORT}
 
-# Iniciar Apache
+# Script de inicialização
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["apache2-foreground"] 

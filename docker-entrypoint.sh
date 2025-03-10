@@ -1,28 +1,25 @@
 #!/bin/bash
+set -e
 
-# Aguardar o MySQL estar pronto
-until php artisan db:monitor > /dev/null 2>&1; do
-  echo "🟡 Aguardando conexão com o banco de dados..."
-  sleep 1
-done
+# Gerar chave do aplicativo se não existir
+php artisan key:generate --force
 
-# Instalar dependências
-composer install --no-interaction --no-progress
-
-# Gerar chave da aplicação se não existir
-php artisan key:generate --no-interaction
-
-# Executar migrações e seeders
-php artisan migrate --force
-php artisan db:seed --force
-
-# Limpar cache
+# Limpar e recriar o cache
 php artisan config:clear
-php artisan cache:clear
 php artisan route:clear
 php artisan view:clear
+php artisan cache:clear
 
-echo "✅ Aplicação inicializada com sucesso!"
+# Otimizar
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
-# Executar o comando passado como argumento (php-fpm)
+# Criar link simbólico do storage
+php artisan storage:link
+
+# Executar migrações do banco de dados
+php artisan migrate --force
+
+# Iniciar Apache em primeiro plano
 exec "$@" 

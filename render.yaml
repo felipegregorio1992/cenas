@@ -3,9 +3,9 @@ services:
     name: linha-do-tempo
     runtime: docker
     dockerfilePath: Dockerfile
-    buildCommand: docker build -t linha-do-tempo .
-    startCommand: docker run -p ${PORT}:${PORT} linha-do-tempo
     envVars:
+      - key: APP_NAME
+        value: "Linha do Tempo"
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
@@ -17,6 +17,12 @@ services:
           type: web
           name: linha-do-tempo
           property: host
+      - key: LOG_CHANNEL
+        value: stack
+      - key: LOG_LEVEL
+        value: error
+      - key: DB_CONNECTION
+        value: mysql
       - key: DB_HOST
         sync: false
       - key: DB_PORT
@@ -27,6 +33,18 @@ services:
         sync: false
       - key: DB_PASSWORD
         sync: false
+      - key: BROADCAST_DRIVER
+        value: log
+      - key: CACHE_DRIVER
+        value: file
+      - key: FILESYSTEM_DRIVER
+        value: local
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: SESSION_DRIVER
+        value: file
+      - key: SESSION_LIFETIME
+        value: "120"
       - key: PORT
         value: "8080"
       - key: APACHE_LOG_DIR
