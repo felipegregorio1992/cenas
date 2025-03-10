@@ -12,14 +12,13 @@ class ExcelData extends Model
 
     protected $fillable = [
         'user_id',
-        'project_id',
-        'file_name',
-        'headers',
+        'filename',
+        'original_name',
+        'total_rows',
         'data'
     ];
 
     protected $casts = [
-        'headers' => 'array',
         'data' => 'array'
     ];
 

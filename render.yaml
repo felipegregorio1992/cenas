@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: linha-do-tempo
+    runtime: docker
+    buildCommand: composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+    startCommand: vendor/bin/heroku-php-apache2 -C apache.conf public/
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        sync: false
+      - key: PORT
+        value: "8080" 
