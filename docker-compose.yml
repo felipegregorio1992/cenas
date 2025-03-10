@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Aplicação PHP
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: linha-do-tempo-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - linha-do-tempo
+
+  # Servidor Web Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: linha-do-tempo-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d/
+    networks:
+      - linha-do-tempo
+
+  # Banco de Dados MySQL
+  db:
+    image: mysql:8.0
+    container_name: linha-do-tempo-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - linha-do-tempo
+
+  # Redis para Cache
+  redis:
+    image: redis:alpine
+    container_name: linha-do-tempo-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - linha-do-tempo
+
+networks:
+  linha-do-tempo:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local 
