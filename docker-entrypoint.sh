@@ -1,6 +1,24 @@
 #!/bin/bash
 set -e
 
+# Aguardar o MySQL estar pronto
+echo "Aguardando conexão com o banco de dados..."
+maxTries=10
+while [ $maxTries -gt 0 ]; do
+    if php artisan db:monitor > /dev/null 2>&1; then
+        break
+    fi
+    maxTries=$(($maxTries - 1))
+    sleep 3
+done
+
+if [ $maxTries -eq 0 ]; then
+    echo "Não foi possível conectar ao banco de dados."
+    exit 1
+fi
+
+echo "Conexão com o banco de dados estabelecida."
+
 # Gerar chave do aplicativo se não existir
 php artisan key:generate --force
 

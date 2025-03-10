@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    libzip-dev
+    libzip-dev \
+    default-mysql-client
 
 # Limpar cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -58,8 +59,11 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 # Configurar variáveis de ambiente PHP
 RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory-limit.ini
 
-# Criar arquivo .env vazio
-RUN touch .env
+# Criar arquivo .env com configurações básicas
+RUN echo "APP_NAME=\"Linha do Tempo\"" > .env \
+    && echo "APP_ENV=production" >> .env \
+    && echo "APP_DEBUG=false" >> .env \
+    && echo "DB_CONNECTION=mysql" >> .env
 
 # Expor porta
 EXPOSE ${PORT}
