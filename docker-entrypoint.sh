@@ -47,11 +47,10 @@ DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
 
 BROADCAST_DRIVER=${BROADCAST_DRIVER:-log}
-CACHE_DRIVER=database
-CACHE_STORE=database
+CACHE_DRIVER=file
 FILESYSTEM_DRIVER=${FILESYSTEM_DRIVER:-local}
-QUEUE_CONNECTION=database
-SESSION_DRIVER=database
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
 SESSION_LIFETIME=${SESSION_LIFETIME:-120}
 
 MEMCACHED_HOST=${MEMCACHED_HOST:-127.0.0.1}
@@ -65,14 +64,20 @@ EOF
 test_db_connection() {
     php -r "
     try {
-        \$dsn = 'pgsql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT') . ';dbname=' . getenv('DB_DATABASE');
+        \$dsn = 'pgsql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT') . ';dbname=' . getenv('DB_DATABASE') . ';connect_timeout=10';
         \$conn = new PDO(
             \$dsn,
             getenv('DB_USERNAME'),
             getenv('DB_PASSWORD'),
-            [PDO::ATTR_TIMEOUT => 5]
+            [
+                PDO::ATTR_TIMEOUT => 10,
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_PERSISTENT => false
+            ]
         );
+        \$conn->query('SELECT 1');
         echo 'Conexão bem sucedida';
+        \$conn = null;
         return 0;
     } catch(PDOException \$e) {
         echo \$e->getMessage();
@@ -119,14 +124,14 @@ echo "DB_PORT: $DB_PORT"
 echo "DB_DATABASE: $DB_DATABASE"
 echo "DB_USERNAME: $DB_USERNAME"
 
-maxTries=10
+maxTries=30
 while [ $maxTries -gt 0 ]; do
     if test_db_connection; then
         break
     fi
     maxTries=$(($maxTries - 1))
     echo "Tentativas restantes: $maxTries"
-    sleep 5
+    sleep 10
 done
 
 if [ $maxTries -eq 0 ]; then
@@ -145,7 +150,8 @@ fi
 echo "Verificando e criando tabelas do sistema..."
 
 # Verifica e cria a tabela de migrações se necessário
-if ! table_exists "migrations"; then
+table_exists "migrations"
+if [ $? -ne 0 ]; then
     echo "Criando tabela de migrações..."
     php artisan migrate:install
 else
@@ -153,7 +159,11 @@ else
 fi
 
 # Verifica e cria a tabela de cache se necessário
-if ! table_exists "cache" && ! migration_exists "create_cache_table"; then
+table_exists "cache"
+HAS_CACHE=$?
+migration_exists "create_cache_table"
+HAS_CACHE_MIGRATION=$?
+if [ $HAS_CACHE -ne 0 ] && [ $HAS_CACHE_MIGRATION -ne 0 ]; then
     echo "Criando tabela de cache..."
     php artisan cache:table
     php artisan migrate --force
@@ -162,7 +172,11 @@ else
 fi
 
 # Verifica e cria a tabela de sessões se necessário
-if ! table_exists "sessions" && ! migration_exists "create_sessions_table"; then
+table_exists "sessions"
+HAS_SESSIONS=$?
+migration_exists "create_sessions_table"
+HAS_SESSIONS_MIGRATION=$?
+if [ $HAS_SESSIONS -ne 0 ] && [ $HAS_SESSIONS_MIGRATION -ne 0 ]; then
     echo "Criando tabela de sessões..."
     php artisan session:table
     php artisan migrate --force
@@ -171,7 +185,11 @@ else
 fi
 
 # Verifica e cria a tabela de jobs se necessário
-if ! table_exists "jobs" && ! migration_exists "create_jobs_table"; then
+table_exists "jobs"
+HAS_JOBS=$?
+migration_exists "create_jobs_table"
+HAS_JOBS_MIGRATION=$?
+if [ $HAS_JOBS -ne 0 ] && [ $HAS_JOBS_MIGRATION -ne 0 ]; then
     echo "Criando tabela de jobs..."
     php artisan queue:table
     php artisan migrate --force
