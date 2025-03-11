@@ -47,10 +47,11 @@ DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
 
 BROADCAST_DRIVER=${BROADCAST_DRIVER:-log}
-CACHE_DRIVER=${CACHE_DRIVER:-file}
+CACHE_DRIVER=database
+CACHE_STORE=database
 FILESYSTEM_DRIVER=${FILESYSTEM_DRIVER:-local}
-QUEUE_CONNECTION=${QUEUE_CONNECTION:-sync}
-SESSION_DRIVER=${SESSION_DRIVER:-file}
+QUEUE_CONNECTION=database
+SESSION_DRIVER=database
 SESSION_LIFETIME=${SESSION_LIFETIME:-120}
 
 MEMCACHED_HOST=${MEMCACHED_HOST:-127.0.0.1}
@@ -112,19 +113,20 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
-echo "Limpando cache..."
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-php artisan cache:clear
-
 echo "Criando tabelas do sistema..."
+php artisan migrate:install
 php artisan cache:table
 php artisan session:table
 php artisan queue:table
 
 echo "Executando migrações..."
 php artisan migrate --force
+
+echo "Limpando cache..."
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan cache:clear
 
 echo "Otimizando..."
 php artisan config:cache
