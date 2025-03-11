@@ -57,12 +57,6 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 # Configurar variáveis de ambiente PHP
 RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory-limit.ini
 
-# Criar arquivo .env com configurações básicas
-RUN echo "APP_NAME=\"Linha do Tempo\"" > .env \
-    && echo "APP_ENV=production" >> .env \
-    && echo "APP_DEBUG=false" >> .env \
-    && echo "DB_CONNECTION=mysql" >> .env
-
 # Script de inicialização
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
