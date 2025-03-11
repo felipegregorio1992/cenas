@@ -5,7 +5,7 @@ echo "Configurando ambiente..."
 
 # Definir valores padrão para variáveis críticas
 export DB_CONNECTION=${DB_CONNECTION:-pgsql}
-export DB_HOST=${DB_HOST:-dpg-ev7nv52r91rc739d1u2g-a.oregon-postgres.render.com}
+export DB_HOST=${DB_HOST:-dpg-ev7nv52r91rc739d1u2g-a}
 export DB_PORT=${DB_PORT:-6432}
 export DB_DATABASE=${DB_DATABASE:-linha_do_tempo}
 export DB_USERNAME=${DB_USERNAME:-linha_do_tempo_user}
