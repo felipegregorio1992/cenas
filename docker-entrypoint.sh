@@ -100,6 +100,16 @@ table_exists() {
     "
 }
 
+# Função para verificar se um arquivo de migração existe
+migration_exists() {
+    local name=$1
+    if ls database/migrations/*_${name}.php 1> /dev/null 2>&1; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Aguardar o PostgreSQL estar pronto
 echo "Aguardando conexão com o banco de dados..."
 echo "Configurações do banco de dados:"
@@ -143,30 +153,30 @@ else
 fi
 
 # Verifica e cria a tabela de cache se necessário
-if ! table_exists "cache"; then
+if ! table_exists "cache" && ! migration_exists "create_cache_table"; then
     echo "Criando tabela de cache..."
     php artisan cache:table
     php artisan migrate --force
 else
-    echo "Tabela de cache já existe."
+    echo "Tabela de cache já existe ou migração já foi criada."
 fi
 
 # Verifica e cria a tabela de sessões se necessário
-if ! table_exists "sessions"; then
+if ! table_exists "sessions" && ! migration_exists "create_sessions_table"; then
     echo "Criando tabela de sessões..."
     php artisan session:table
     php artisan migrate --force
 else
-    echo "Tabela de sessões já existe."
+    echo "Tabela de sessões já existe ou migração já foi criada."
 fi
 
 # Verifica e cria a tabela de jobs se necessário
-if ! table_exists "jobs"; then
+if ! table_exists "jobs" && ! migration_exists "create_jobs_table"; then
     echo "Criando tabela de jobs..."
     php artisan queue:table
     php artisan migrate --force
 else
-    echo "Tabela de jobs já existe."
+    echo "Tabela de jobs já existe ou migração já foi criada."
 fi
 
 echo "Executando migrações pendentes..."
