@@ -25,15 +25,15 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        value: 35.227.164.209
+        value: dpg-ev7nv52r91rc739d1u2g-a
       - key: DB_PORT
-        value: "6432"
+        value: "5432"
       - key: DB_DATABASE
         value: linha_do_tempo
       - key: DB_USERNAME
         value: linha_do_tempo_user
       - key: DB_PASSWORD
-        value: 455z58jML513WywHYCqLgsWHtPf40b11
+        value: 4E5z58jML5i3WywHYCqLgsWMiPI40Cji
       - key: BROADCAST_DRIVER
         value: log
       - key: CACHE_DRIVER
