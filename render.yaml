@@ -2,13 +2,11 @@ services:
   - type: web
     name: linha-do-tempo
     runtime: docker
-    dockerfilePath: Dockerfile
+    region: oregon
     plan: starter
     branch: main
-    numInstances: 1
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /
-    buildCommand: docker build -t linha-do-tempo .
-    startCommand: docker run -p $PORT:8080 linha-do-tempo
     envVars:
       - key: APP_NAME
         value: "Linha do Tempo"
@@ -19,10 +17,7 @@ services:
       - key: APP_KEY
         generateValue: true
       - key: APP_URL
-        fromService:
-          type: web
-          name: linha-do-tempo
-          property: host
+        sync: false
       - key: LOG_CHANNEL
         value: stack
       - key: LOG_LEVEL
