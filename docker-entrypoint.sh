@@ -118,6 +118,11 @@ php artisan route:clear
 php artisan view:clear
 php artisan cache:clear
 
+echo "Criando tabelas do sistema..."
+php artisan cache:table
+php artisan session:table
+php artisan queue:table
+
 echo "Executando migrações..."
 php artisan migrate --force
 
