@@ -3,6 +3,10 @@ services:
     name: linha-do-tempo
     runtime: docker
     dockerfilePath: Dockerfile
+    plan: starter
+    branch: main
+    numInstances: 1
+    healthCheckPath: /
     envVars:
       - key: APP_NAME
         value: "Linha do Tempo"
@@ -48,5 +52,4 @@ services:
       - key: PORT
         value: "8080"
       - key: APACHE_LOG_DIR
-        value: "/var/log/apache2"
-    healthCheckPath: / 
+        value: "/var/log/apache2" 

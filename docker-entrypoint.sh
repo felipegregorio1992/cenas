@@ -3,24 +3,54 @@ set -e
 
 echo "Configurando ambiente..."
 
+# Verificar variáveis obrigatórias
+required_vars=(
+    "DB_CONNECTION"
+    "DB_HOST"
+    "DB_PORT"
+    "DB_DATABASE"
+    "DB_USERNAME"
+    "DB_PASSWORD"
+)
+
+for var in "${required_vars[@]}"; do
+    if [ -z "${!var}" ]; then
+        echo "Erro: Variável de ambiente $var não está definida"
+        exit 1
+    fi
+done
+
 # Criar arquivo .env com as variáveis de ambiente
-echo "APP_NAME=\"${APP_NAME}\"" > .env
-echo "APP_ENV=${APP_ENV}" >> .env
-echo "APP_KEY=${APP_KEY}" >> .env
-echo "APP_DEBUG=${APP_DEBUG}" >> .env
-echo "APP_URL=${APP_URL}" >> .env
-echo "DB_CONNECTION=${DB_CONNECTION}" >> .env
-echo "DB_HOST=${DB_HOST}" >> .env
-echo "DB_PORT=${DB_PORT}" >> .env
-echo "DB_DATABASE=${DB_DATABASE}" >> .env
-echo "DB_USERNAME=${DB_USERNAME}" >> .env
-echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
-echo "BROADCAST_DRIVER=${BROADCAST_DRIVER}" >> .env
-echo "CACHE_DRIVER=${CACHE_DRIVER}" >> .env
-echo "FILESYSTEM_DRIVER=${FILESYSTEM_DRIVER}" >> .env
-echo "QUEUE_CONNECTION=${QUEUE_CONNECTION}" >> .env
-echo "SESSION_DRIVER=${SESSION_DRIVER}" >> .env
-echo "SESSION_LIFETIME=${SESSION_LIFETIME}" >> .env
+cat << EOF > .env
+APP_NAME="${APP_NAME:-Linha do Tempo}"
+APP_ENV=${APP_ENV:-production}
+APP_KEY=${APP_KEY}
+APP_DEBUG=${APP_DEBUG:-false}
+APP_URL=${APP_URL}
+
+LOG_CHANNEL=${LOG_CHANNEL:-stack}
+LOG_LEVEL=${LOG_LEVEL:-error}
+
+DB_CONNECTION=${DB_CONNECTION}
+DB_HOST=${DB_HOST}
+DB_PORT=${DB_PORT}
+DB_DATABASE=${DB_DATABASE}
+DB_USERNAME=${DB_USERNAME}
+DB_PASSWORD=${DB_PASSWORD}
+
+BROADCAST_DRIVER=${BROADCAST_DRIVER:-log}
+CACHE_DRIVER=${CACHE_DRIVER:-file}
+FILESYSTEM_DRIVER=${FILESYSTEM_DRIVER:-local}
+QUEUE_CONNECTION=${QUEUE_CONNECTION:-sync}
+SESSION_DRIVER=${SESSION_DRIVER:-file}
+SESSION_LIFETIME=${SESSION_LIFETIME:-120}
+
+MEMCACHED_HOST=${MEMCACHED_HOST:-127.0.0.1}
+
+REDIS_HOST=${REDIS_HOST:-127.0.0.1}
+REDIS_PASSWORD=${REDIS_PASSWORD:-null}
+REDIS_PORT=${REDIS_PORT:-6379}
+EOF
 
 # Função para testar conexão com o banco
 test_db_connection() {
@@ -44,9 +74,12 @@ test_db_connection() {
 
 # Aguardar o MySQL estar pronto
 echo "Aguardando conexão com o banco de dados..."
+echo "Configurações do banco de dados:"
+echo "DB_CONNECTION: $DB_CONNECTION"
 echo "DB_HOST: $DB_HOST"
 echo "DB_PORT: $DB_PORT"
 echo "DB_DATABASE: $DB_DATABASE"
+echo "DB_USERNAME: $DB_USERNAME"
 
 maxTries=10
 while [ $maxTries -gt 0 ]; do
@@ -67,27 +100,28 @@ echo "Conexão com o banco de dados estabelecida."
 
 # Gerar chave do aplicativo se não existir
 if [ -z "$APP_KEY" ]; then
+    echo "Gerando nova APP_KEY..."
     php artisan key:generate --force
 fi
 
-# Limpar cache
+echo "Limpando cache..."
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 php artisan cache:clear
 
-# Executar migrações
+echo "Executando migrações..."
 php artisan migrate --force
 
-# Otimizar
+echo "Otimizando..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Criar link simbólico do storage
+echo "Criando link simbólico do storage..."
 php artisan storage:link || true
 
-# Ajustar permissões
+echo "Ajustando permissões..."
 chown -R www-data:www-data /var/www/html/storage
 chown -R www-data:www-data /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage
