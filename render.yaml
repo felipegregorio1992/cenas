@@ -1,54 +1,12 @@
-services:
-  - type: web
-    name: linha-do-tempo
-    runtime: docker
-    region: oregon
-    plan: starter
-    branch: main
-    dockerfilePath: ./Dockerfile
-    healthCheckPath: /
-    envVars:
-      - key: APP_NAME
-        value: "Linha do Tempo"
-      - key: APP_ENV
-        value: production
-      - key: APP_DEBUG
-        value: "false"
-      - key: APP_KEY
-        generateValue: true
-      - key: APP_URL
-        sync: false
-      - key: LOG_CHANNEL
-        value: stack
-      - key: LOG_LEVEL
-        value: error
-      - key: DB_CONNECTION
-        value: pgsql
-      - key: DB_HOST
-        value: dpg-cv7nv52n91rc739dju2g-a.oregon-postgres.render.com
-      - key: DB_PORT
-        value: "5432"
-      - key: DB_DATABASE
-        value: linha_do_tempo
-      - key: DB_USERNAME
-        value: linha_do_tempo_user
-      - key: DB_PASSWORD
-        value: 4E5z58jML5i3WywHYCqLgsWMiPI40Cji
-      - key: BROADCAST_DRIVER
-        value: log
-      - key: CACHE_DRIVER
-        value: database
-      - key: CACHE_STORE
-        value: database
-      - key: FILESYSTEM_DRIVER
-        value: local
-      - key: QUEUE_CONNECTION
-        value: database
-      - key: SESSION_DRIVER
-        value: database
-      - key: SESSION_LIFETIME
-        value: "120"
-      - key: PORT
-        value: "8080"
-      - key: APACHE_LOG_DIR
-        value: "/var/log/apache2" 
+# Exported from Render on 2025-03-11T02:47:26Z
+databases:
+- name: linha_do_tempo
+  databaseName: linha_do_tempo
+  user: linha_do_tempo_user
+  plan: free
+  region: oregon
+  ipAllowList:
+  - source: 0.0.0.0/0
+    description: everywhere
+  postgresMajorVersion: "16"
+version: "1"
