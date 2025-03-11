@@ -81,6 +81,25 @@ test_db_connection() {
     "
 }
 
+# Função para verificar se uma tabela existe
+table_exists() {
+    local table=$1
+    php -r "
+    try {
+        \$pdo = new PDO(
+            'pgsql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT') . ';dbname=' . getenv('DB_DATABASE'),
+            getenv('DB_USERNAME'),
+            getenv('DB_PASSWORD')
+        );
+        \$stmt = \$pdo->query(\"SELECT to_regclass('public.$table')\");
+        \$exists = \$stmt->fetchColumn();
+        exit(\$exists ? 0 : 1);
+    } catch(Exception \$e) {
+        exit(1);
+    }
+    "
+}
+
 # Aguardar o PostgreSQL estar pronto
 echo "Aguardando conexão com o banco de dados..."
 echo "Configurações do banco de dados:"
@@ -113,13 +132,44 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
-echo "Criando tabelas do sistema..."
-php artisan migrate:install
-php artisan cache:table
-php artisan session:table
-php artisan queue:table
+echo "Verificando e criando tabelas do sistema..."
 
-echo "Executando migrações..."
+# Verifica e cria a tabela de migrações se necessário
+if ! table_exists "migrations"; then
+    echo "Criando tabela de migrações..."
+    php artisan migrate:install
+else
+    echo "Tabela de migrações já existe."
+fi
+
+# Verifica e cria a tabela de cache se necessário
+if ! table_exists "cache"; then
+    echo "Criando tabela de cache..."
+    php artisan cache:table
+    php artisan migrate --force
+else
+    echo "Tabela de cache já existe."
+fi
+
+# Verifica e cria a tabela de sessões se necessário
+if ! table_exists "sessions"; then
+    echo "Criando tabela de sessões..."
+    php artisan session:table
+    php artisan migrate --force
+else
+    echo "Tabela de sessões já existe."
+fi
+
+# Verifica e cria a tabela de jobs se necessário
+if ! table_exists "jobs"; then
+    echo "Criando tabela de jobs..."
+    php artisan queue:table
+    php artisan migrate --force
+else
+    echo "Tabela de jobs já existe."
+fi
+
+echo "Executando migrações pendentes..."
 php artisan migrate --force
 
 echo "Limpando cache..."
