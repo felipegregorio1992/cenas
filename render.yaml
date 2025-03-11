@@ -7,6 +7,8 @@ services:
     branch: main
     numInstances: 1
     healthCheckPath: /
+    buildCommand: docker build -t linha-do-tempo .
+    startCommand: docker run -p $PORT:8080 linha-do-tempo
     envVars:
       - key: APP_NAME
         value: "Linha do Tempo"
@@ -26,17 +28,17 @@ services:
       - key: LOG_LEVEL
         value: error
       - key: DB_CONNECTION
-        value: mysql
+        value: pgsql
       - key: DB_HOST
-        sync: false
+        value: dpg-ev7nv52r91rc739d1u2g-a
       - key: DB_PORT
-        value: "3306"
+        value: "6432"
       - key: DB_DATABASE
-        sync: false
+        value: linha_do_tempo
       - key: DB_USERNAME
-        sync: false
+        value: linha_do_tempo_user
       - key: DB_PASSWORD
-        sync: false
+        value: 455z58jML513WywHYCqLgsWHtPf40b11
       - key: BROADCAST_DRIVER
         value: log
       - key: CACHE_DRIVER
@@ -52,4 +54,28 @@ services:
       - key: PORT
         value: "8080"
       - key: APACHE_LOG_DIR
-        value: "/var/log/apache2" 
+        value: "/var/log/apache2"
+
+  - type: pserv
+    name: mysql
+    plan: starter
+    env: docker
+    disk:
+      name: mysql
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+    envVars:
+      - key: MYSQL_DATABASE
+        value: linha_do_tempo
+      - key: MYSQL_USER
+        value: root
+      - key: MYSQL_PASSWORD
+        fromService:
+          name: linha-do-tempo
+          type: web
+          envVarKey: DB_PASSWORD
+      - key: MYSQL_ROOT_PASSWORD
+        fromService:
+          name: linha-do-tempo
+          type: web
+          envVarKey: DB_PASSWORD 

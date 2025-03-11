@@ -56,7 +56,7 @@ EOF
 test_db_connection() {
     php -r "
     try {
-        \$dsn = 'mysql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT');
+        \$dsn = 'pgsql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT') . ';dbname=' . getenv('DB_DATABASE');
         \$conn = new PDO(
             \$dsn,
             getenv('DB_USERNAME'),
@@ -72,7 +72,7 @@ test_db_connection() {
     "
 }
 
-# Aguardar o MySQL estar pronto
+# Aguardar o PostgreSQL estar pronto
 echo "Aguardando conexão com o banco de dados..."
 echo "Configurações do banco de dados:"
 echo "DB_CONNECTION: $DB_CONNECTION"
